@@ -78,9 +78,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 
   [7] = LAYOUT_universal(
-    _______  , _______  , _______  , _______  , _______  ,                            MS_WHLU  , MS_WHLL  , MS_WHLR  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  ,                            MS_WHLD  , MS_BTN1  , MS_BTN2  , KC_PGUP  , _______  ,
-    _______  , C(KC_X)  , C(KC_C)  , C(KC_V)  , _______  ,                            _______  , MS_BTN3  , MS_BTN4  , KC_PGDN  , _______  ,
+    _______  , _______  , _______  , _______  , _______  ,                            KC_WH_U  , KC_WH_L  , KC_WH_R  , _______  , _______  ,
+    _______  , _______  , _______  , _______  , _______  ,                            KC_WH_D  , KC_BTN1  , KC_BTN2  , KC_PGUP  , _______  ,
+    _______  , C(KC_X)  , C(KC_C)  , C(KC_V)  , _______  ,                            _______  , KC_BTN3  , KC_BTN4  , KC_PGDN  , _______  ,
     _______  , _______  , _______  ,LCTL_T(KC_INT4),KC_SPC,LSFT_T(KC_INT5),_______  , _______  , _______  , _______  , _______  , _______
   ),
 };
