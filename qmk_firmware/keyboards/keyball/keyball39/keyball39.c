@@ -14,6 +14,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+https://github.com/qmk/qmk_firmware/blob/master/docs/keycodes.md
 */
 
 #include QMK_KEYBOARD_H
@@ -34,6 +36,16 @@ matrix_row_t matrix_mask[MATRIX_ROWS] = {
     0b00111111,
 };
 // clang-format on
+
+// combo setting
+#ifdef COMBO_ENABLE
+
+const uint16_t PROGMEM my_fy[] = {KC_F, KC_Y, COMBO_END};
+
+combo_t key_combos[] = {
+    COMBO(my_fy, LSFT(KC_Z))
+};
+#endif
 
 void keyball_on_adjust_layout(keyball_adjust_t v) {
 #ifdef RGBLIGHT_ENABLE
