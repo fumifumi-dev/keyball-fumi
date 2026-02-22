@@ -134,11 +134,15 @@ const key_override_t scln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_DOT  ,
 const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_MINUS, JM_UNDS);
 
 // This globally defines all key overrides to be used
-const key_override_t *key_overrides[] = {
+const key_override_t *my_key_overrides[] = {
 	&coln_key_override,
 	&scln_key_override,
 	&unds_key_override,
 };
+
+const key_override_t **get_main_key_override_table(void) {
+    return my_key_overrides;
+}
 #endif
 
 #ifdef OLED_ENABLE
