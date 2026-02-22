@@ -50,17 +50,21 @@ combo_t key_combos[] = {
 #endif
 
 #ifdef KEY_OVERRIDE_ENABLE
-const key_override_t coln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_COMM , JM_COLN);
-const key_override_t scln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_DOT  , JM_SCLN);
-const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_MINUS, JM_UNDS);
+const key_override_t coln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_COMM , KC_QUOT);
+const key_override_t scln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_DOT  , KC_SCLN);
+const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_MINUS, S(KC_INT1));
 
 // This globally defines all key overrides to be used
-const key_override_t *key_overrides[] = {
+const key_override_t *my_key_overrides[] = {
 	&coln_key_override,
 	&scln_key_override,
 	&unds_key_override,
+	NULL
 };
 
+const key_override_t **get_main_key_override_table(void) {
+    return my_key_overrides;
+}
 #endif
 
 void keyball_on_adjust_layout(keyball_adjust_t v) {
