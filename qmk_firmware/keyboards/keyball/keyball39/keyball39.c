@@ -37,18 +37,6 @@ matrix_row_t matrix_mask[MATRIX_ROWS] = {
 };
 // clang-format on
 
-// This globally defines all key overrides to be used
-const key_override_t *my_key_overrides[] = {
-	&coln_key_override,
-	&scln_key_override,
-	&unds_key_override,
-	NULL
-};
-
-const key_override_t **get_main_key_override_table(void) {
-    return my_key_overrides;
-}
-
 
 void keyball_on_adjust_layout(keyball_adjust_t v) {
 #ifdef RGBLIGHT_ENABLE
