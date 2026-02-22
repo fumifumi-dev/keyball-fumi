@@ -38,7 +38,6 @@ matrix_row_t matrix_mask[MATRIX_ROWS] = {
 // clang-format on
 
 // combo setting
-#ifdef COMBO_ENABLE
 
 const uint16_t PROGMEM my_jk[] = {KC_J, KC_K, COMBO_END};
 const uint16_t PROGMEM my_kl[] = {KC_K, KC_L, COMBO_END};
@@ -47,9 +46,7 @@ combo_t key_combos[] = {
     COMBO(my_jk, KC_BTN1),
     COMBO(my_kl, KC_BTN2),
 };
-#endif
 
-#ifdef KEY_OVERRIDE_ENABLE
 const key_override_t coln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_COMM , KC_QUOT);
 const key_override_t scln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_DOT  , KC_SCLN);
 const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_MINUS, S(KC_INT1));
@@ -65,7 +62,7 @@ const key_override_t *my_key_overrides[] = {
 const key_override_t **get_main_key_override_table(void) {
     return my_key_overrides;
 }
-#endif
+
 
 void keyball_on_adjust_layout(keyball_adjust_t v) {
 #ifdef RGBLIGHT_ENABLE
