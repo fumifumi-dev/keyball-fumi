@@ -37,16 +37,6 @@ matrix_row_t matrix_mask[MATRIX_ROWS] = {
 };
 // clang-format on
 
-// combo setting
-#ifdef COMBO_ENABLE
-
-const uint16_t PROGMEM my_fy[] = {KC_F, KC_Y, COMBO_END};
-
-combo_t key_combos[] = {
-    COMBO(my_fy, LSFT(KC_Z))
-};
-#endif
-
 void keyball_on_adjust_layout(keyball_adjust_t v) {
 #ifdef RGBLIGHT_ENABLE
     // adjust RGBLIGHT's clipping and effect ranges
