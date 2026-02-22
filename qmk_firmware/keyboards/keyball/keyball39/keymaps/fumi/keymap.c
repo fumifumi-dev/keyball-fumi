@@ -125,9 +125,9 @@ combo_t key_combos[] = {
     COMBO(my_jk, KC_BTN1),
     COMBO(my_kl, KC_BTN2),
 };
-
-const key_override_t coln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_COMM , KC_QUOT);
-const key_override_t scln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_DOT  , KC_SCLN);
+// Shiftを打ち消して(negative mods)、単体の KC_QUOT (:) を送る定義
+const key_override_t coln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_COMM, KC_QUOT, ALL_LAYERS, MOD_MASK_SHIFT);
+const key_override_t scln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_DOT, KC_SCLN, ALL_LAYERS, MOD_MASK_SHIFT);
 const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_MINUS, S(KC_INT1));
 
 // This globally defines all key overrides to be used
