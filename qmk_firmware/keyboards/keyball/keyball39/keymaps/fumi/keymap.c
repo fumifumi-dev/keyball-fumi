@@ -66,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
     KC_A     , KC_S     ,LT(3,KC_D),LT(1,KC_F), KC_G     ,                            KC_H     ,LT(1,KC_J),LT(3,KC_K), KC_L     , JM_MINS  ,
     KC_Z     , KC_X     , KC_C     , KC_V     ,LT(2,KC_B),                           LT(2,KC_N), KC_M     , JM_COMM  , JM_DOT   , JM_SLSH  ,
-LT(4,KC_CAPS), KC_LGUI  , KC_LALT  ,LCTL_T(KC_MHEN),KC_SPC,LSFT_T(KC_HENK),KC_RSFT  , KC_ENT   , _______  , _______  , _______  ,LT(4,KC_EQUAL)
+LT(4,KC_CAPS), KC_LGUI  , KC_LALT  ,LCTL_T(KC_MHEN),KC_SPC,LSFT_T(KC_HENK),KC_RSFT  , KC_ENT   , _______  , _______  , _______  ,LT(4,JM_EQL)
   ),
 
   // !                     ¥                    ~                                     [          ]          (          )          +
@@ -115,35 +115,6 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 //    keyball_set_scroll_mode(get_highest_layer(state) == 3);
     return state;
 }
-
-// combo setting
-#ifdef COMBO_ENABLE
-
-const uint16_t PROGMEM my_jk[] = {KC_J, KC_K, COMBO_END};
-const uint16_t PROGMEM my_kl[] = {KC_K, KC_L, COMBO_END};
-
-combo_t key_combos[] = {
-    COMBO(my_jk, KC_BTN1),
-    COMBO(my_kl, KC_BTN2),
-};
-#endif
-
-#ifdef KEY_OVERRIDE_ENABLE
-const key_override_t coln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_COMM , JM_COLN);
-const key_override_t scln_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_DOT  , JM_SCLN);
-const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_MINUS, JM_UNDS);
-
-// This globally defines all key overrides to be used
-const key_override_t *my_key_overrides[] = {
-	&coln_key_override,
-	&scln_key_override,
-	&unds_key_override,
-};
-
-const key_override_t **get_main_key_override_table(void) {
-    return my_key_overrides;
-}
-#endif
 
 #ifdef OLED_ENABLE
 
