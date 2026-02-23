@@ -74,21 +74,14 @@ enum custom_keycodes {
     MY_MINS              // Shiftなしで「-」、Shiftありで「_」
 };
 
-
-//----------------------------------
-// One-Shot Shift 発動対象レイヤー
-//----------------------------------
-bool is_oneshot_layer_active(void) {
-    uint8_t layer = get_highest_layer(layer_state);
-    return (layer == 0 || layer == 1);
-}
-
 //----------------------------------
 // キー処理
 //----------------------------------
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    uint8_t layer = get_highest_layer(layer_state);
 
-    bool is_layer_0 = (get_highest_layer(layer_state) == 0);
+    bool is_layer_0 = (layer == 0);
+    bool is_layer_0_or_1 = (layer <= 1); // 0か1か
     uint8_t mods = get_mods() | get_oneshot_mods();
     bool shift = mods & MOD_MASK_SHIFT;
 
@@ -134,7 +127,7 @@ check_shift_input:
     if (shift_left_pressed && shift_right_pressed &&
         (keycode == KC_LSFT || keycode == KC_RSFT) &&
         record->event.pressed &&
-        is_oneshot_layer_active()) {
+        is_layer_0_or_1) {
 
         register_mods(MOD_MASK_SHIFT);
         unregister_mods(MOD_MASK_SHIFT);
