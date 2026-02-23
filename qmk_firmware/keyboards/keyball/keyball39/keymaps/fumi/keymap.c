@@ -58,14 +58,74 @@ https://github.com/qmk/qmk_firmware/blob/master/docs/keycodes.md
 #define JM_RABK S(KC_DOT)         // > us:Shift+.
 #define JM_QUES S(KC_SLSH)        // ? us:Shift+/
 #define JM_UNDS S(KC_INT1)        // _ us:Shift+-
+// カスタムキーコードの定義（既存の定義と被らない名前で）
+enum custom_keycodes {
+    MY_COMM = SAFE_RANGE, // Shiftなしで「,」、Shiftありで「:」
+    MY_DOT,              // Shiftなしで「.」、Shiftありで「;」
+    MY_MINS              // Shiftなしで「-」、Shiftありで「_」
+};
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    // レイヤー0の時だけカスタム処理を有効にする
+    // get_highest_layer(layer_state) == 0 でも判定可能
+    bool is_layer_0 = (get_highest_layer(layer_state) == 0);
+
+    switch (keycode) {
+        case MY_COMM:
+            if (record->event.pressed) {
+                if (is_layer_0 && (get_mods() & MOD_MASK_SHIFT)) {
+                    // Shiftが押されている時：Shiftを一時解除して「:」(KC_QUOT)を送る
+                    del_mods(MOD_MASK_SHIFT);
+                    register_code(KC_QUOT);
+                    unregister_code(KC_QUOT);
+                    add_mods(MOD_MASK_SHIFT);
+                } else {
+                    // 通常時：そのまま「,」(KC_COMM)を送る
+                    register_code(KC_COMM);
+                    unregister_code(KC_COMM);
+                }
+            }
+            return false;
+
+        case MY_DOT:
+            if (record->event.pressed) {
+                if (is_layer_0 && (get_mods() & MOD_MASK_SHIFT)) {
+                    // Shiftが押されている時：Shiftを一時解除して「;」(KC_SCLN)を送る
+                    del_mods(MOD_MASK_SHIFT);
+                    register_code(KC_SCLN);
+                    unregister_code(KC_SCLN);
+                    add_mods(MOD_MASK_SHIFT);
+                } else {
+                    register_code(KC_DOT);
+                    unregister_code(KC_DOT);
+                }
+            }
+            return false;
+
+        case MY_MINS:
+            if (record->event.pressed) {
+                if (is_layer_0 && (get_mods() & MOD_MASK_SHIFT)) {
+                    // Shiftが押されている時：Shiftを維持したまま「ろ」(KC_INT1)を送る
+                    // これにより「_」が出力される
+                    register_code(KC_INT1);
+                    unregister_code(KC_INT1);
+                } else {
+                    register_code(KC_MINUS);
+                    unregister_code(KC_MINUS);
+                }
+            }
+            return false;
+    }
+    return true;
+}
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // keymap for default (VIA)
   [0] = LAYOUT_universal(
     KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
-    KC_A     , KC_S     ,LT(3,KC_D),LT(1,KC_F), KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_MINUS  ,
-   LT(4,KC_Z), KC_X     , KC_C     , KC_V     ,LT(2,KC_B),                           LT(2,KC_N), KC_M     , KC_COMM  , KC_DOT   ,LT(4,JM_SLSH),
+    KC_A     , KC_S     ,LT(3,KC_D),LT(1,KC_F), KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , MY_MINUS  ,
+   LT(4,KC_Z), KC_X     , KC_C     , KC_V     ,LT(2,KC_B),                           LT(2,KC_N), KC_M     , MY_COMM  , MY_DOT   ,LT(4,JM_SLSH),
     KC_CAPS  , KC_LGUI  , KC_LALT  ,LCTL_T(KC_MHEN),KC_SPC,LSFT_T(KC_HENK),KC_RSFT  , KC_ENT   , _______  , _______  , _______  , JM_EQL
   ),
 

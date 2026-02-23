@@ -6,4 +6,4 @@ VIA_ENABLE = no
 
 COMBO_COUNT = 2
 COMBO_ENABLE = yes          # Combo
-KEY_OVERRIDE_ENABLE = yes
+KEY_OVERRIDE_ENABLE = no
