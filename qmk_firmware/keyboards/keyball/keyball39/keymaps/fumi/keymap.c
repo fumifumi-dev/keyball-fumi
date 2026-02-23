@@ -21,6 +21,7 @@ https://github.com/qmk/qmk_firmware/blob/master/docs/keycodes.md
 #include QMK_KEYBOARD_H
 
 #include "quantum.h"
+#include "quantum/action_osm.h"
 
 #define KC_MHEN KC_INT4
 #define KC_HENK KC_INT5
@@ -75,10 +76,11 @@ enum custom_keycodes {
 };
 
 // One-Shot Shift 発動対象レイヤー
-static bool is_oneshot_layer_active(void) {
+bool is_oneshot_layer_active(void) {
     uint8_t layer = get_highest_layer(layer_state);
     return (layer == 0 || layer == 1);
 }
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     bool is_layer_0 = (get_highest_layer(layer_state) == 0);
@@ -86,34 +88,40 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     bool shift = mods & MOD_MASK_SHIFT;
 
     // -------------------
-    // カスタムキー処理
+    // カスタムキー処理 + One-Shot Shift解除
     // -------------------
     switch (keycode) {
+
         case MY_COMM:
             if (is_layer_0 && shift) tap_code16(S(KC_QUOT));
             else tap_code(KC_COMM);
+            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
+                clear_oneshot_mods();
             goto check_shift_input;
 
         case MY_DOT:
             if (is_layer_0 && shift) tap_code16(S(KC_SCLN));
             else tap_code(KC_DOT);
+            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
+                clear_oneshot_mods();
             goto check_shift_input;
 
         case MY_MINS:
             if (is_layer_0 && shift) tap_code16(S(KC_INT1));
             else tap_code(KC_MINUS);
+            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
+                clear_oneshot_mods();
             goto check_shift_input;
 
         case KC_LSFT: shift_left_pressed  = record->event.pressed; break;
         case KC_RSFT: shift_right_pressed = record->event.pressed; break;
 
+        // One-Shot Shift 解除対象（MY_* は既に処理済み）
         case KC_ENT: case KC_SPC:
         case JM_SCLN: case JM_COLN: case JM_LPRN: case JM_RPRN:
         case JM_LABK: case JM_RABK: case JM_LCBR: case JM_RCBR:
-        case MY_COMM: case MY_DOT: case MY_MINS:
-            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT)) {
+            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
                 clear_oneshot_mods();
-            }
             break;
     }
 
