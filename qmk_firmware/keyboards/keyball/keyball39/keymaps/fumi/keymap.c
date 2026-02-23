@@ -62,10 +62,7 @@ https://github.com/qmk/qmk_firmware/blob/master/docs/keycodes.md
 #define JM_LSH1 LSFT_T(KC_HENK)
 #define JM_RSH1 RSFT_T(KC_BSPC)
 
-static bool shift_left_pressed  = false;
-static bool shift_right_pressed = false;
-static uint16_t shift_osm_timer = 0;  // タイマー保持
-static uint16_t layer5_timer    = 0;     // レイヤー5自動戻しタイマー
+static uint16_t layer4_timer    = 0;     // レイヤー4自動戻しタイマー
 
 // カスタムキーコードの定義（既存の定義と被らない名前で）
 enum custom_keycodes {
@@ -89,58 +86,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         // カスタムキー処理 + One-Shot Shift 解除
         case MY_COMM:
-            if (is_layer_0 && shift) tap_code16(KC_QUOT);
+            if (is_layer_0 && shift) tap_code(KC_QUOT);
             else tap_code(KC_COMM);
-            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
-                clear_oneshot_mods();
-            goto check_shift_input;
+            break;
 
         case MY_DOT:
-            if (is_layer_0 && shift) tap_code16(KC_SCLN);
+            if (is_layer_0 && shift) tap_code(KC_SCLN);
             else tap_code(KC_DOT);
-            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
-                clear_oneshot_mods();
-            goto check_shift_input;
+            break;
 
         case MY_MINS:
             if (is_layer_0 && shift) tap_code16(S(KC_INT1));
             else tap_code(KC_MINUS);
-            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
-                clear_oneshot_mods();
-            goto check_shift_input;
-
-        // Shift 押下状態更新
-        case KC_LSFT: shift_left_pressed  = record->event.pressed; break;
-        case KC_RSFT: shift_right_pressed = record->event.pressed; break;
-
-        // One-Shot Shift 解除対象（MY_* は既に処理済み）
-        case KC_ENT: case KC_SPC:
-        case JM_SCLN: case JM_COLN: case JM_LPRN: case JM_RPRN:
-        case JM_LABK: case JM_RABK: case JM_LCBR: case JM_RCBR:
-            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
-                clear_oneshot_mods();
             break;
     }
 
-check_shift_input:
-    // 左右Shift同時押しで自前 One-Shot Shift
-    if (shift_left_pressed && shift_right_pressed &&
-        (keycode == KC_LSFT || keycode == KC_RSFT) &&
-        record->event.pressed &&
-        is_layer_0_or_1) {
-
-        add_oneshot_mods(MOD_MASK_SHIFT);
-        shift_osm_timer = timer_read();
-    }
-
-    // Shift以外でタイマーリセット
-    if (record->event.pressed && keycode != KC_LSFT && keycode != KC_RSFT) {
-        shift_osm_timer = timer_read();
-    }
-
-    // レイヤー5タイマーリセット
-    if (record->event.pressed && get_highest_layer(layer_state) == 5) {
-        layer5_timer = timer_read();
+    // レイヤー4タイマーリセット
+    if (record->event.pressed && get_highest_layer(layer_state) == 4) {
+        layer4_timer = timer_read();
     }
 
     return true;
@@ -161,7 +124,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     JM_EXLM  , _______  , JM_YEN   , _______  , JM_TILD  ,                            JM_ASTR  , KC_7     , KC_8     , KC_9     , JM_PLUS,
     JM_AMPR  , JM_HASH  , JM_DLR   , _______  , _______  ,                            _______  , KC_4     , KC_5     , KC_6     , MY_MINS  ,
     JM_AT    , JM_PERC  , JM_CIRC  , JM_PIPE  , JM_GRV   ,                            _______  , KC_1     , KC_2     , KC_3     , JM_SLSH  ,
-    MO(5)    , _______  , _______  , _______  , _______  , _______  ,      KC_DEL   ,  KC_0    , _______  , _______  , _______  , JM_EQL
+    MO(4)    , _______  , _______  , _______  , _______  , _______  ,      KC_DEL   ,  KC_0    , _______  , _______  , _______  , JM_EQL
   ),
 
   [2] = LAYOUT_universal(
@@ -199,16 +162,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // スキャン処理
 //----------------------------------
 void matrix_scan_user(void) {
-    // One-Shot Shift 自動解除（3秒）
-    if (get_oneshot_mods() & MOD_MASK_SHIFT) {
-        if (timer_elapsed(shift_osm_timer) > 3000) {
-            clear_oneshot_mods();
-        }
-    }
-
-    // レイヤー5 自動解除（10秒）
-    if (get_highest_layer(layer_state) == 5) {
-        if (timer_elapsed(layer5_timer) > 10000) {
+    // レイヤー4 自動解除（10秒）
+    if (get_highest_layer(layer_state) == 4) {
+        if (timer_elapsed(layer4_timer) > 10000) {
             layer_move(0);
         }
     }
@@ -220,15 +176,8 @@ void matrix_scan_user(void) {
 layer_state_t layer_state_set_user(layer_state_t state) {
     uint8_t layer = get_highest_layer(state);
 
-    // レイヤー0/1以外で One-Shot Shift 解除
-    if (layer != 0 && layer != 1) {
-        if (get_oneshot_mods() & MOD_MASK_SHIFT) {
-            clear_oneshot_mods();
-        }
-    }
-
     // スクロールモード切替
-    keyball_set_scroll_mode(layer == 4);
+    keyball_set_scroll_mode(layer == 3);
 
     return state;
 }
