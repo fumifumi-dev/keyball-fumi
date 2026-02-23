@@ -64,8 +64,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // keymap for default (VIA)
   [0] = LAYOUT_universal(
     KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
-    KC_A     , KC_S     ,LT(3,KC_D),LT(1,KC_F), KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , JM_MINS  ,
-   LT(4,KC_Z), KC_X     , KC_C     , KC_V     ,LT(2,KC_B),                           LT(2,KC_N), KC_M     , JM_COMM  , JM_DOT   ,LT(4,JM_SLSH),
+    KC_A     , KC_S     ,LT(3,KC_D),LT(1,KC_F), KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_MINUS  ,
+   LT(4,KC_Z), KC_X     , KC_C     , KC_V     ,LT(2,KC_B),                           LT(2,KC_N), KC_M     , KC_COMM  , KC_DOT   ,LT(4,JM_SLSH),
     KC_CAPS  , KC_LGUI  , KC_LALT  ,LCTL_T(KC_MHEN),KC_SPC,LSFT_T(KC_HENK),KC_RSFT  , KC_ENT   , _______  , _______  , _______  , JM_EQL
   ),
 
@@ -74,14 +74,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // @          %          ^         |          \                                     {          }          <          >          /
   [1] = LAYOUT_universal(
     JM_EXLM  , _______  , JM_YEN   , _______  , JM_TILD  ,                            JM_LBRC  , JM_RBRC  , JM_LPRN  , JM_RPRN  , JM_PLUS  ,
-    JM_AMPR  , JM_HASH  , JM_DLR   , _______  , JM_GRV   ,                            JM_ASTR  , _______  , JM_DQUO  , JM_QUOT  , JM_MINS  ,
+    JM_AMPR  , JM_HASH  , JM_DLR   , _______  , JM_GRV   ,                            JM_ASTR  , _______  , JM_DQUO  , JM_QUOT  , KC_MINUS  ,
     JM_AT    , JM_PERC  , JM_CIRC  , JM_PIPE  , JM_BSLS  ,                            JM_LCBR  , JM_RCBR  , JM_LABK  , JM_RABK  , JM_SLSH  ,
     _______  , KC_LGUI  , KC_LALT  , KC_LCTL  , KC_TAB   , KC_LSFT  ,      KC_DEL   , KC_BSPC  , _______  , _______  , _______  , KC_ESC
   ),
 
   [2] = LAYOUT_universal(
     KC_1     , KC_2     , KC_3     , KC_4     , KC_5     ,                            KC_6     , KC_7     , KC_8     , KC_9     , JM_PLUS,
-    _______  , _______  , _______  , _______  , _______  ,                            JM_ASTR  , KC_4     , KC_5     , KC_6     , JM_MINS  ,
+    _______  , _______  , _______  , _______  , _______  ,                            JM_ASTR  , KC_4     , KC_5     , KC_6     , KC_MINUS  ,
     _______  , JM_PERC  , _______  , _______  , _______  ,                            _______  , KC_1     , KC_2     , KC_3     , JM_SLSH  ,
     _______  , KC_LGUI  , KC_LALT  , KC_LCTL  , KC_0     , KC_LSFT  ,       JM_DOT  ,  KC_ENT  , _______  , _______  , _______  , JM_EQL
   ),
@@ -124,26 +124,22 @@ const uint16_t PROGMEM my_kl[] = {KC_K, KC_L, COMBO_END};
 combo_t key_combos[] = {
     COMBO(my_jk, KC_BTN1),
     COMBO(my_kl, KC_BTN2),
+    NULL
 };
 #endif
 
 #ifdef KEY_OVERRIDE_ENABLE
-// Shiftを打ち消して(negative mods)、単体の KC_QUOT (:) を送る定義
-const key_override_t coln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_COMM, KC_QUOT, ~0, MOD_MASK_SHIFT);
-const key_override_t scln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_DOT, KC_SCLN, ~0, MOD_MASK_SHIFT);
-const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_MINUS, KC_INT1);
+//key_override_on
+const key_override_t coln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_COMM, KC_QUOT, 1, MOD_MASK_SHIFT);
+const key_override_t scln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_DOT, KC_SCLN, 1, MOD_MASK_SHIFT);
+const key_override_t unds_key_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_MINUS, KC_INT1, 1);
 
-// This globally defines all key overrides to be used
-const key_override_t *my_key_overrides[] = {
-	&coln_key_override,
-	&scln_key_override,
-	&unds_key_override,
-	NULL
+const key_override_t **key_overrides = (const key_override_t *[]) {
+    &coln_key_override,
+    &scln_key_override,
+    &unds_key_override,
+    NULL // 終端
 };
-
-const key_override_t **get_main_key_override_table(void) {
-    return my_key_overrides;
-}
 #endif
 
 #ifdef OLED_ENABLE
