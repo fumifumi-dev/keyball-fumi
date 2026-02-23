@@ -89,14 +89,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         // カスタムキー処理 + One-Shot Shift 解除
         case MY_COMM:
-            if (is_layer_0 && shift) tap_code16(S(KC_QUOT));
+            if (is_layer_0 && shift) tap_code16(KC_QUOT);
             else tap_code(KC_COMM);
             if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
                 clear_oneshot_mods();
             goto check_shift_input;
 
         case MY_DOT:
-            if (is_layer_0 && shift) tap_code16(S(KC_SCLN));
+            if (is_layer_0 && shift) tap_code16(KC_SCLN);
             else tap_code(KC_DOT);
             if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
                 clear_oneshot_mods();
@@ -129,8 +129,7 @@ check_shift_input:
         record->event.pressed &&
         is_layer_0_or_1) {
 
-        register_mods(MOD_MASK_SHIFT);
-        unregister_mods(MOD_MASK_SHIFT);
+        add_oneshot_mods(MOD_MASK_SHIFT);
         shift_osm_timer = timer_read();
     }
 
