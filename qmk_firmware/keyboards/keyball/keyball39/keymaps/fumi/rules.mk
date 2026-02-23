@@ -2,7 +2,7 @@ RGBLIGHT_ENABLE = no
 
 OLED_ENABLE = yes
 
-VIA_ENABLE = no
+VIA_ENABLE = yes
 
 COMBO_COUNT = 2
 COMBO_ENABLE = yes          # Combo
