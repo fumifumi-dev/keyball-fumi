@@ -78,7 +78,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     uint8_t layer = get_highest_layer(layer_state);
 
     bool is_layer_0 = (layer == 0);
-    bool is_layer_0_or_1 = (layer <= 1); // 0か1か
     uint8_t mods = get_mods() | get_oneshot_mods();
     bool shift = mods & MOD_MASK_SHIFT;
 
@@ -164,7 +163,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [7] = LAYOUT_universal(
     _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
+    _______  , _______  , _______  , _______  , _______  ,                            _______  , KC_BTN1  , _______  , _______  , _______  ,
     _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
     _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
   ),
