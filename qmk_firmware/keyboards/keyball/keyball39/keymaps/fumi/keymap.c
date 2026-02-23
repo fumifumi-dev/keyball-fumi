@@ -21,7 +21,6 @@ https://github.com/qmk/qmk_firmware/blob/master/docs/keycodes.md
 #include QMK_KEYBOARD_H
 
 #include "quantum.h"
-#include "quantum/action_osm.h"
 
 #define KC_MHEN KC_INT4
 #define KC_HENK KC_INT5
