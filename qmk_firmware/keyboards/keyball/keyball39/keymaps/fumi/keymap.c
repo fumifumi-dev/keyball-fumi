@@ -132,7 +132,7 @@ combo_t key_combos[] = {
 const key_override_t coln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_COMM, KC_QUOT, (1<<0), MOD_MASK_SHIFT);
 const key_override_t scln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_DOT, KC_SCLN, (1<<0), MOD_MASK_SHIFT);
 
-const key_override_t unds_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_MINUS, KC_INT1, (1<<0), MOD_MASK_SHIFT);
+const key_override_t unds_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_MINUS, KC_INT1, (1<<0), 0);
 
 const key_override_t **key_overrides = (const key_override_t *[]) {
     &coln_key_override,
