@@ -35,7 +35,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define TAP_CODE_DELAY 5
 
-// #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
-// #define AUTO_MOUSE_DEFAULT_LAYER 7
+#define POINTING_DEVICE_AUTO_MOUSE_ENABLE
+#define AUTO_MOUSE_DEFAULT_LAYER 7
 
-#define DYNAMIC_KEYMAP_LAYER_COUNT 5
+#define DYNAMIC_KEYMAP_LAYER_COUNT 8
+
+#ifdef CAPS_WORD_ENABLE
+#define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
+#define CAPS_WORD_IDLE_TIMEOUT 5000
+#endif

@@ -4,5 +4,7 @@ OLED_ENABLE = yes
 
 VIA_ENABLE = yes
 
+CAPS_WORD_ENABLE = yes
+
 #COMBO_COUNT = 2
-COMBO_ENABLE = no          # Combo
+#COMBO_ENABLE = no          # Combo
