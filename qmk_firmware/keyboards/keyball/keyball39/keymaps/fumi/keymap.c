@@ -85,19 +85,41 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         // カスタムキー処理 + One-Shot Shift 解除
         case MY_COMM:
-            if (is_layer_0 && shift) tap_code(KC_QUOT);
-            else tap_code(KC_COMM);
-            break;
+            if (record->event.pressed) {
+                if (is_layer_0 && shift) {
+                    uint8_t saved_mods = get_mods();
+                    uint8_t saved_oneshot = get_oneshot_mods();
+                    clear_mods();
+                    clear_oneshot_mods();
+                    tap_code(KC_QUOT);
+                    set_mods(saved_mods);
+                    set_oneshot_mods(saved_oneshot);
+                } else {
+                    tap_code(KC_COMM);
+                }
+            }
+            return false;
 
         case MY_DOT:
-            if (is_layer_0 && shift) tap_code(KC_SCLN);
-            else tap_code(KC_DOT);
-            break;
+            if (record->event.pressed) {
+                if (is_layer_0 && shift) {
+                    uint8_t saved_mods = get_mods();
+                    uint8_t saved_oneshot = get_oneshot_mods();
+                    clear_mods();
+                    clear_oneshot_mods();
+                    tap_code(KC_SCLN);
+                    set_mods(saved_mods);
+                    set_oneshot_mods(saved_oneshot);
+                } else {
+                    tap_code(KC_DOT);
+                }
+            }
+            return false;
 
         case MY_MINS:
             if (is_layer_0 && shift) tap_code16(S(KC_INT1));
             else tap_code(KC_MINUS);
-            break;
+            return false;
     }
 
     // レイヤー4タイマーリセット
@@ -156,7 +178,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [6] = LAYOUT_universal(
     _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
-    _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
+    _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , KC_BTN1  , _______  , _______  ,
     _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
     _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
   ),
