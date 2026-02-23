@@ -4,6 +4,7 @@ OLED_ENABLE = yes
 
 VIA_ENABLE = yes
 
-COMBO_COUNT = 2
-COMBO_ENABLE = yes          # Combo
-KEY_OVERRIDE_ENABLE = no
+ONE_SHOT_MODS_ENABLE = yes
+
+#COMBO_COUNT = 2
+COMBO_ENABLE = no          # Combo

@@ -58,6 +58,15 @@ https://github.com/qmk/qmk_firmware/blob/master/docs/keycodes.md
 #define JM_RABK S(KC_DOT)         // > us:Shift+.
 #define JM_QUES S(KC_SLSH)        // ? us:Shift+/
 #define JM_UNDS S(KC_INT1)        // _ us:Shift+-
+
+#define JM_LSH1 LSFT_T(KC_HENK)
+#define JM_RSH1 RSFT_T(KC_BSPC)
+
+static bool shift_left_pressed  = false;
+static bool shift_right_pressed = false;
+static uint16_t shift_osm_timer = 0;  // タイマー保持
+static uint16_t layer5_timer    = 0;     // レイヤー5自動戻しタイマー
+
 // カスタムキーコードの定義（既存の定義と被らない名前で）
 enum custom_keycodes {
     MY_COMM = SAFE_RANGE, // Shiftなしで「,」、Shiftありで「:」
@@ -65,57 +74,72 @@ enum custom_keycodes {
     MY_MINS              // Shiftなしで「-」、Shiftありで「_」
 };
 
+// One-Shot Shift 発動対象レイヤー
+static bool is_oneshot_layer_active(void) {
+    uint8_t layer = get_highest_layer(layer_state);
+    return (layer == 0 || layer == 1);
+}
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    // レイヤー0の時だけカスタム処理を有効にする
-    // get_highest_layer(layer_state) == 0 でも判定可能
-    bool is_layer_0 = (get_highest_layer(layer_state) == 0);
 
+    bool is_layer_0 = (get_highest_layer(layer_state) == 0);
+    uint8_t mods = get_mods() | get_oneshot_mods();
+    bool shift = mods & MOD_MASK_SHIFT;
+
+    // -------------------
+    // カスタムキー処理
+    // -------------------
     switch (keycode) {
         case MY_COMM:
-            if (record->event.pressed) {
-                if (is_layer_0 && (get_mods() & MOD_MASK_SHIFT)) {
-                    // Shiftが押されている時：Shiftを一時解除して「:」(KC_QUOT)を送る
-                    del_mods(MOD_MASK_SHIFT);
-                    register_code(KC_QUOT);
-                    unregister_code(KC_QUOT);
-                    add_mods(MOD_MASK_SHIFT);
-                } else {
-                    // 通常時：そのまま「,」(KC_COMM)を送る
-                    register_code(KC_COMM);
-                    unregister_code(KC_COMM);
-                }
-            }
-            return false;
+            if (is_layer_0 && shift) tap_code16(S(KC_QUOT));
+            else tap_code(KC_COMM);
+            goto check_shift_input;
 
         case MY_DOT:
-            if (record->event.pressed) {
-                if (is_layer_0 && (get_mods() & MOD_MASK_SHIFT)) {
-                    // Shiftが押されている時：Shiftを一時解除して「;」(KC_SCLN)を送る
-                    del_mods(MOD_MASK_SHIFT);
-                    register_code(KC_SCLN);
-                    unregister_code(KC_SCLN);
-                    add_mods(MOD_MASK_SHIFT);
-                } else {
-                    register_code(KC_DOT);
-                    unregister_code(KC_DOT);
-                }
-            }
-            return false;
+            if (is_layer_0 && shift) tap_code16(S(KC_SCLN));
+            else tap_code(KC_DOT);
+            goto check_shift_input;
 
         case MY_MINS:
-            if (record->event.pressed) {
-                if (is_layer_0 && (get_mods() & MOD_MASK_SHIFT)) {
-                    // Shiftが押されている時：Shiftを維持したまま「ろ」(KC_INT1)を送る
-                    // これにより「_」が出力される
-                    register_code(KC_INT1);
-                    unregister_code(KC_INT1);
-                } else {
-                    register_code(KC_MINUS);
-                    unregister_code(KC_MINUS);
-                }
+            if (is_layer_0 && shift) tap_code16(S(KC_INT1));
+            else tap_code(KC_MINUS);
+            goto check_shift_input;
+
+        case KC_LSFT: shift_left_pressed  = record->event.pressed; break;
+        case KC_RSFT: shift_right_pressed = record->event.pressed; break;
+
+        case KC_ENT: case KC_SPC:
+        case JM_SCLN: case JM_COLN: case JM_LPRN: case JM_RPRN:
+        case JM_LABK: case JM_RABK: case JM_LCBR: case JM_RCBR:
+        case MY_COMM: case MY_DOT: case MY_MINS:
+            if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT)) {
+                clear_oneshot_mods();
             }
-            return false;
+            break;
     }
+
+check_shift_input:
+    // -------------------
+    // 左右Shift同時押しでOne-Shot Shift発動（レイヤー0/1限定）
+    // -------------------
+    if (shift_left_pressed && shift_right_pressed &&
+        (keycode == KC_LSFT || keycode == KC_RSFT) &&
+        record->event.pressed &&
+        is_oneshot_layer_active()) {
+
+        osm_activate_mods(MOD_MASK_SHIFT);
+        shift_osm_timer = timer_read();
+    }
+
+    // Shift以外でタイマーリセット
+    if (record->event.pressed && keycode != KC_LSFT && keycode != KC_RSFT) {
+        shift_osm_timer = timer_read();
+    }
+
+    // レイヤー5タイマーリセット
+    if (record->event.pressed && get_highest_layer(layer_state) == 5) {
+        layer5_timer = timer_read();
+    }
+
     return true;
 }
 
@@ -123,41 +147,38 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // keymap for default (VIA)
   [0] = LAYOUT_universal(
-    KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
-    KC_A     , KC_S     ,LT(3,KC_D),LT(1,KC_F), KC_G     ,                            KC_H     , KC_INT1     , KC_QUOT     , KC_SCLN     , MY_MINS  ,
-   LT(4,KC_Z), KC_X     , KC_C     , KC_V     ,LT(2,KC_B),                           LT(2,KC_N), KC_M     , MY_COMM  , MY_DOT   ,LT(4,JM_SLSH),
-    KC_CAPS  , KC_LGUI  , KC_LALT  ,LCTL_T(KC_MHEN),KC_SPC,LSFT_T(KC_HENK),KC_RSFT  , KC_ENT   , _______  , _______  , _______  , JM_EQL
+    KC_Q     , KC_W     , KC_E     , KC_R     ,LT(2,KC_T),                           LT(2,KC_Y), KC_U     , KC_I     , KC_O     , KC_P     ,
+    KC_A     , KC_S     , KC_D     , KC_F     ,LT(1,KC_G),                           LT(1,KC_H), KC_J     ,LT(3,KC_K), KC_L     , MY_MINS  ,
+    KC_Z     , KC_X     , KC_C     , KC_V     , KC_B     ,                            KC_N     , KC_M     , MY_COMM  , MY_DOT   , JM_SLSH  ,
+    _______  , KC_LGUI  , KC_LALT  , KC_MHEN  , KC_SPC   , JM_LSH1  ,      JM_LSH1  , KC_ENT   , _______  , _______  , _______  , JM_EQL
   ),
 
-  // !                     ¥                    ~                                     [          ]          (          )          +
-  // &          #          $                    `                                     *                     "          '          -
-  // @          %          ^         |          \                                     {          }          <          >          /
   [1] = LAYOUT_universal(
-    JM_EXLM  , _______  , JM_YEN   , _______  , JM_TILD  ,                            JM_LBRC  , JM_RBRC  , JM_LPRN  , JM_RPRN  , JM_PLUS  ,
-    JM_AMPR  , JM_HASH  , JM_DLR   , _______  , JM_GRV   ,                            JM_ASTR  , _______  , JM_DQUO  , JM_QUOT  , KC_MINUS  ,
-    JM_AT    , JM_PERC  , JM_CIRC  , JM_PIPE  , JM_BSLS  ,                            JM_LCBR  , JM_RCBR  , JM_LABK  , JM_RABK  , JM_SLSH  ,
-    _______  , KC_LGUI  , KC_LALT  , KC_LCTL  , KC_TAB   , KC_LSFT  ,      KC_DEL   , KC_BSPC  , _______  , _______  , _______  , KC_ESC
+    JM_EXLM  , _______  , JM_YEN   , _______  , JM_TILD  ,                            JM_ASTR  , KC_7     , KC_8     , KC_9     , JM_PLUS,
+    JM_AMPR  , JM_HASH  , JM_DLR   , _______  , _______  ,                            _______  , KC_4     , KC_5     , KC_6     , MY_MINS  ,
+    JM_AT    , JM_PERC  , JM_CIRC  , JM_PIPE  , JM_GRV   ,                            _______  , KC_1     , KC_2     , KC_3     , JM_SLSH  ,
+    MO(5)    , _______  , _______  , _______  , _______  , _______  ,      KC_DEL   ,  KC_0    , _______  , _______  , _______  , JM_EQL
   ),
 
   [2] = LAYOUT_universal(
-    KC_1     , KC_2     , KC_3     , KC_4     , KC_5     ,                            KC_6     , KC_7     , KC_8     , KC_9     , JM_PLUS,
-    _______  , _______  , _______  , _______  , _______  ,                            JM_ASTR  , KC_4     , KC_5     , KC_6     , KC_MINUS  ,
-    _______  , JM_PERC  , _______  , _______  , _______  ,                            _______  , KC_1     , KC_2     , KC_3     , JM_SLSH  ,
-    _______  , KC_LGUI  , KC_LALT  , KC_LCTL  , KC_0     , KC_LSFT  ,       JM_DOT  ,  KC_ENT  , _______  , _______  , _______  , JM_EQL
+    _______  , _______  , JM_LABK  , JM_LBRC  , _______  ,                            _______  , JM_RBRC  , JM_RABK  , _______  , _______  ,
+    _______  , _______  , JM_LCBR  , JM_LPRN  , _______  ,                            _______  , JM_RPRN  , JM_RCBR  , _______  , _______  ,
+    _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
+    _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
   ),
 
   [3] = LAYOUT_universal(
-    _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , KC_UP    , KC_BSPC  , KC_DEL   ,
-    _______  , _______  , _______  , _______  , _______  ,                            _______  , KC_LEFT  , KC_DOWN  , KC_RGHT  , _______  ,
-    _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
-    _______  , KC_LGUI  , KC_LALT  , KC_LCTL  , KC_SPC   , KC_LSFT  ,      KC_RSFT  , KC_ENT   , _______  , _______  , _______  , _______
+    S(KC_LEFT),S(KC_UP) ,S(KC_DOWN),S(KC_RGHT),  KC_DEL  ,                            _______  , _______  , _______  , _______  , _______  ,
+    KC_LEFT  , KC_UP    , KC_DOWN  , KC_RGHT  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
+    KC_HOME  , KC_PGUP  , KC_PGDN  , KC_END   , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
+    _______  , _______  , _______  , _______  , _______  , _______  ,      KC_BSPC  , KC_ENT   , _______  , _______  , _______  , _______
   ),
 
   [4] = LAYOUT_universal(
     KC_F1    , KC_F2    , KC_F3    , KC_F4    , KC_F5    ,                            KC_F6    , KC_F7    , KC_F8    , KC_F9    , KC_F10   ,
-    _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , KC_F10   , KC_F12   ,
-    _______  , _______  , _______  , _______  , _______  ,                            _______  , _______  , _______  , _______  , _______  ,
-    _______  , KC_LGUI  , KC_LALT  , KC_LCTL  , KC_SPC   , KC_LSFT  ,      KC_RSFT  , KC_RCTL  , _______  , _______  , _______  , _______
+    KC_ESC   , _______  , _______  , _______  , _______  ,                            KC_PSCR  , KC_PAUS  , KC_INS   , KC_F10   , KC_F12   ,
+    KC_HOME  , KC_PGUP  , KC_PGDN  , KC_END   , _______  ,                            KC_SYRQ  , _______  , KC_SCRL  , _______  , KC_DEL   ,
+    MO(0)    , KC_LGUI  , KC_LALT  , KC_LCTL  , KC_SPC   , KC_LSFT  ,      KC_RSFT  , KC_RCTL  , _______  , _______  , _______  , KC_RALT
   ),
 /*
   [7] = LAYOUT_universal(
@@ -168,38 +189,48 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
 */
 };
-// clang-format on
+
+
+void matrix_scan_user(void) {
+    // One-Shot Shift 自動解除
+    if (get_oneshot_mods() & MOD_MASK_SHIFT) {
+        if (timer_elapsed(shift_osm_timer) > 3000) {
+            clear_oneshot_mods();
+        }
+    }
+
+    // レイヤー5 自動解除（10秒）
+    if (get_highest_layer(layer_state) == 5) {
+        if (timer_elapsed(layer5_timer) > 10000) {
+            layer_move(0);
+        }
+    }
+}
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-//    // Auto enable scroll mode when the highest layer is 3
-//    keyball_set_scroll_mode(get_highest_layer(state) == 3);
+    uint8_t layer = get_highest_layer(state);
+
+    // レイヤー0/1以外でOne-Shot Shift解除
+    if (layer != 0 && layer != 1) {
+        if (get_oneshot_mods() & MOD_MASK_SHIFT) {
+            clear_oneshot_mods();
+        }
+    }
+
+    // 既存のスクロールモード切替
+    keyball_set_scroll_mode(layer == 4);
+
     return state;
 }
 
 #ifdef COMBO_ENABLE
-// combo setting
-const uint16_t PROGMEM my_jk[] = {KC_J, KC_K, COMBO_END};
-const uint16_t PROGMEM my_kl[] = {KC_K, KC_L, COMBO_END};
 
-combo_t key_combos[] = {
-    COMBO(my_jk, KC_BTN1),
-    COMBO(my_kl, KC_BTN2),
-};
-#endif
+// <
+//const uint16_t PROGMEM my_tr[] = {KC_T, KC_R, COMBO_END};
 
-#ifdef KEY_OVERRIDE_ENABLE
-//key_override_on
-const key_override_t coln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_COMM, KC_QUOT, (1<<0), MOD_MASK_SHIFT);
-const key_override_t scln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_DOT, KC_SCLN, (1<<0), MOD_MASK_SHIFT);
-
-const key_override_t unds_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_MINUS, KC_INT1, (1<<0), 0);
-
-const key_override_t **key_overrides = (const key_override_t *[]) {
-    &coln_key_override,
-    &scln_key_override,
-    &unds_key_override,
-    NULL // 終端
-};
+//combo_t key_combos[] = {
+//    COMBO(my_tr, JM_LABK),
+//};
 #endif
 
 #ifdef OLED_ENABLE
