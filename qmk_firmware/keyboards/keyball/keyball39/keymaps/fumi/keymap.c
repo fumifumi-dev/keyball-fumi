@@ -46,12 +46,12 @@ https://github.com/qmk/qmk_firmware/blob/master/docs/keycodes.md
 #define JM_QUOT S(KC_7)           // ' us:'
 #define JM_LPRN S(KC_8)           // ( us:Shift+9
 #define JM_RPRN S(KC_9)           // ) us:Shift+0
-#define JM_EQL  S(KC_MINUS)       // = us:Shift+=
+#define JM_EQL  S(KC_MINUS)       // = us:Shift+-
 #define JM_TILD S(KC_EQUAL)       // ~ us:Shift+`
-#define JM_PIPE S(KC_BSLS)        // | us:Shift+\;
+#define JM_PIPE S(KC_INT3)        // | us:Shift+\;
 #define JM_GRV  S(KC_LBRC)        // ` us:`
 #define JM_LCBR S(KC_RBRC)        // { us:Shift+[
-#define JM_RCBR S(KC_INT1)        // } us:Shift+]
+#define JM_RCBR S(KC_BSLS)        // } us:Shift+]
 #define JM_PLUS S(KC_SCLN)        // + us:Shift+=
 #define JM_ASTR S(KC_QUOT)        // * us:Shift+8
 #define JM_LABK S(KC_COMM)        // < us:Shift+,
@@ -64,9 +64,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // keymap for default (VIA)
   [0] = LAYOUT_universal(
     KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
-    KC_A     , KC_S     ,LT(3,KC_D),LT(1,KC_F), KC_G     ,                            KC_H     ,LT(1,KC_J),LT(3,KC_K), KC_L     , JM_MINS  ,
-    KC_Z     , KC_X     , KC_C     , KC_V     ,LT(2,KC_B),                           LT(2,KC_N), KC_M     , JM_COMM  , JM_DOT   , JM_SLSH  ,
-LT(4,KC_CAPS), KC_LGUI  , KC_LALT  ,LCTL_T(KC_MHEN),KC_SPC,LSFT_T(KC_HENK),KC_RSFT  , KC_ENT   , _______  , _______  , _______  ,LT(4,JM_EQL)
+    KC_A     , KC_S     ,LT(3,KC_D),LT(1,KC_F), KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , JM_MINS  ,
+   LT(4,KC_Z), KC_X     , KC_C     , KC_V     ,LT(2,KC_B),                           LT(2,KC_N), KC_M     , JM_COMM  , JM_DOT   ,LT(4,JM_SLSH),
+    KC_CAPS  , KC_LGUI  , KC_LALT  ,LCTL_T(KC_MHEN),KC_SPC,LSFT_T(KC_HENK),KC_RSFT  , KC_ENT   , _______  , _______  , _______  , JM_EQL
   ),
 
   // !                     ¥                    ~                                     [          ]          (          )          +
@@ -116,7 +116,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     return state;
 }
 
-
+#ifdef COMBO_ENABLE
 // combo setting
 const uint16_t PROGMEM my_jk[] = {KC_J, KC_K, COMBO_END};
 const uint16_t PROGMEM my_kl[] = {KC_K, KC_L, COMBO_END};
@@ -125,10 +125,13 @@ combo_t key_combos[] = {
     COMBO(my_jk, KC_BTN1),
     COMBO(my_kl, KC_BTN2),
 };
+#endif
+
+#ifdef KEY_OVERRIDE_ENABLE
 // Shiftを打ち消して(negative mods)、単体の KC_QUOT (:) を送る定義
 const key_override_t coln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_COMM, KC_QUOT, ~0, MOD_MASK_SHIFT);
 const key_override_t scln_key_override = ko_make_with_layers_and_negmods(MOD_MASK_SHIFT, KC_DOT, KC_SCLN, ~0, MOD_MASK_SHIFT);
-const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_MINUS, S(KC_INT1));
+const key_override_t unds_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_MINUS, KC_INT1);
 
 // This globally defines all key overrides to be used
 const key_override_t *my_key_overrides[] = {
@@ -141,7 +144,7 @@ const key_override_t *my_key_overrides[] = {
 const key_override_t **get_main_key_override_table(void) {
     return my_key_overrides;
 }
-
+#endif
 
 #ifdef OLED_ENABLE
 
