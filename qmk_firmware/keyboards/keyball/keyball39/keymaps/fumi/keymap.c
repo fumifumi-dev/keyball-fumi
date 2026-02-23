@@ -74,23 +74,27 @@ enum custom_keycodes {
     MY_MINS              // Shiftなしで「-」、Shiftありで「_」
 };
 
+
+//----------------------------------
 // One-Shot Shift 発動対象レイヤー
+//----------------------------------
 bool is_oneshot_layer_active(void) {
     uint8_t layer = get_highest_layer(layer_state);
     return (layer == 0 || layer == 1);
 }
 
+//----------------------------------
+// キー処理
+//----------------------------------
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     bool is_layer_0 = (get_highest_layer(layer_state) == 0);
     uint8_t mods = get_mods() | get_oneshot_mods();
     bool shift = mods & MOD_MASK_SHIFT;
 
-    // -------------------
-    // カスタムキー処理 + One-Shot Shift解除
-    // -------------------
     switch (keycode) {
 
+        // カスタムキー処理 + One-Shot Shift 解除
         case MY_COMM:
             if (is_layer_0 && shift) tap_code16(S(KC_QUOT));
             else tap_code(KC_COMM);
@@ -112,6 +116,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 clear_oneshot_mods();
             goto check_shift_input;
 
+        // Shift 押下状態更新
         case KC_LSFT: shift_left_pressed  = record->event.pressed; break;
         case KC_RSFT: shift_right_pressed = record->event.pressed; break;
 
@@ -125,15 +130,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
 check_shift_input:
-    // -------------------
-    // 左右Shift同時押しでOne-Shot Shift発動（レイヤー0/1限定）
-    // -------------------
+    // 左右Shift同時押しで自前 One-Shot Shift
     if (shift_left_pressed && shift_right_pressed &&
         (keycode == KC_LSFT || keycode == KC_RSFT) &&
         record->event.pressed &&
         is_oneshot_layer_active()) {
 
-        osm_activate_mods(MOD_MASK_SHIFT);
+        register_mods(MOD_MASK_SHIFT);
+        unregister_mods(MOD_MASK_SHIFT);
         shift_osm_timer = timer_read();
     }
 
@@ -149,6 +153,7 @@ check_shift_input:
 
     return true;
 }
+
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -198,8 +203,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 
+//----------------------------------
+// スキャン処理
+//----------------------------------
 void matrix_scan_user(void) {
-    // One-Shot Shift 自動解除
+    // One-Shot Shift 自動解除（3秒）
     if (get_oneshot_mods() & MOD_MASK_SHIFT) {
         if (timer_elapsed(shift_osm_timer) > 3000) {
             clear_oneshot_mods();
@@ -214,17 +222,20 @@ void matrix_scan_user(void) {
     }
 }
 
+//----------------------------------
+// レイヤー状態更新
+//----------------------------------
 layer_state_t layer_state_set_user(layer_state_t state) {
     uint8_t layer = get_highest_layer(state);
 
-    // レイヤー0/1以外でOne-Shot Shift解除
+    // レイヤー0/1以外で One-Shot Shift 解除
     if (layer != 0 && layer != 1) {
         if (get_oneshot_mods() & MOD_MASK_SHIFT) {
             clear_oneshot_mods();
         }
     }
 
-    // 既存のスクロールモード切替
+    // スクロールモード切替
     keyball_set_scroll_mode(layer == 4);
 
     return state;
