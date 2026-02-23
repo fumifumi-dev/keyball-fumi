@@ -89,14 +89,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         // カスタムキー処理 + One-Shot Shift 解除
         case MY_COMM:
-            if (is_layer_0 && shift) tap_code16(KC_QUOT);
+            if (is_layer_0 && shift) tap_code16(S(KC_QUOT));
             else tap_code(KC_COMM);
             if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
                 clear_oneshot_mods();
             goto check_shift_input;
 
         case MY_DOT:
-            if (is_layer_0 && shift) tap_code16(KC_SCLN);
+            if (is_layer_0 && shift) tap_code16(S(KC_SCLN));
             else tap_code(KC_DOT);
             if (record->event.pressed && (get_oneshot_mods() & MOD_MASK_SHIFT))
                 clear_oneshot_mods();
@@ -154,7 +154,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_Q     , KC_W     , KC_E     , KC_R     ,LT(2,KC_T),                           LT(2,KC_Y), KC_U     , KC_I     , KC_O     , KC_P     ,
     KC_A     , KC_S     , KC_D     , KC_F     ,LT(1,KC_G),                           LT(1,KC_H), KC_J     ,LT(3,KC_K), KC_L     , MY_MINS  ,
     KC_Z     , KC_X     , KC_C     , KC_V     , KC_B     ,                            KC_N     , KC_M     , MY_COMM  , MY_DOT   , JM_SLSH  ,
-    _______  , KC_LGUI  , KC_LALT  , KC_MHEN  , KC_SPC   , JM_LSH1  ,      JM_LSH1  , KC_ENT   , _______  , _______  , _______  , JM_EQL
+    _______  , KC_LGUI  , KC_LALT  , KC_MHEN  , KC_SPC   , JM_LSH1  ,      JM_RSH1  , KC_ENT   , _______  , _______  , _______  , JM_EQL
   ),
 
   [1] = LAYOUT_universal(
