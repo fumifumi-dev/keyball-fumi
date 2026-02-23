@@ -124,7 +124,6 @@ const uint16_t PROGMEM my_kl[] = {KC_K, KC_L, COMBO_END};
 combo_t key_combos[] = {
     COMBO(my_jk, KC_BTN1),
     COMBO(my_kl, KC_BTN2),
-    NULL
 };
 #endif
 
